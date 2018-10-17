@@ -9,12 +9,6 @@ P_Stop=P_S%>%group_by(.,Pollutant,City,State)%>%summarise(.,m=median(value))%>%
 P=P_S%>%filter(.,Pollutant == 'median_NO2')%>%filter(., City%in%P_Stop$City[which(P_Stop$Pollutant == 'median_NO2')])
 (ggplot(P,aes(x=reorder(City,value,median),y=value))+geom_boxplot(aes(color=City)))
 
-
-choice = 'SO2.AQI'
-
-temp=str_sub(choice,start = 1, end = (str_length(choice)-4))
-new=paste0('median_',temp)
-
 table_by_city <- Pollution_bycity%>%
   group_by(.,State,City)%>%
   summarise(.,NO2 = sum(median_NO2),SO2 = sum(median_SO2), CO = sum(median_CO), O3 = sum(median_O3))
@@ -32,4 +26,10 @@ Top_SO2=New_Table%>%arrange(.,desc(PC_SO2))%>%top_n(10)
 Top_CO=New_Table%>%arrange(.,desc(PC_CO))%>%top_n(10)
 Top_O3=New_Table%>%arrange(.,desc(PC_O3))%>%top_n(10)
 (ggplot(Top_NO2,aes(x=PC_NO2))+geom_densitye(aes(color=City)))
+
+
+P_S5=P_S%>%filter(.,City%in%c('Boston','New York','Chicago','Los Angeles','Houston','Pheonix','Seattle'))%>%
+  group_by(.,City,Pollutant)%>%summarise(.,m=median(value))
+
+P_byyear=P_S%>%group_by(.,Year)
 

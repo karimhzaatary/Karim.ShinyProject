@@ -23,6 +23,16 @@ function(input, output, session) {
                          choices=cities,
                          selected = cities[1])
   })
+  
+  observe({
+    cities <- unique(P_byyear[P_byyear$State==input$state1,"City"])#[[1]]
+    print(cities)
+    print(cities[1])
+    updateSelectizeInput(session,
+                         inputId = "city1",
+                         choices=cities,
+                         selected = cities[1])
+  })
 
   
   CalendarPol <- reactive({
@@ -37,15 +47,16 @@ function(input, output, session) {
     
     
   })
+  Pollution_Annual<-reactive({
+    P_byyear%>%filter(State == input$state1, City==input$city1,Pollutant == input$chemical1) 
+      
+})
+   Pollution_Monthly=reactive({
+     P_bymonth%>%filter(State == input$state1, City==input$city1,Pollutant == input$chemical1)})
     
   Values_bychemicaltop<-reactive({
-     # choice = input$chemical
-     # temp=str_sub(choice,start = 1, end = (str_length(choice)-4))
-     # new=paste0('median_',temp)
-     
    
-       
-     P_S%>%filter(.,Pollutant == input$chemical)%>%filter(., City%in%P_Stop$City[which(P_Stop$Pollutant == input$chemical)])
+    P_S%>%filter(.,Pollutant == input$chemicals)%>%filter(., City%in%P_Stop$City[which(P_Stop$Pollutant == input$chemicals)])
         
         })
           
@@ -55,11 +66,16 @@ function(input, output, session) {
     # new2=paste0('median_',temp)
     
     
-    P_S%>%filter(.,Pollutant == input$chemical)%>%filter(., City%in%P_Stop1$City[which(P_Stop1$Pollutant == input$chemical)])
+    P_S%>%filter(.,Pollutant == input$chemicals)%>%filter(., City%in%P_Stop1$City[which(P_Stop1$Pollutant == input$chemicals)])
     
   })
+  
 
+  chosen_cities<-reactive({
+  P_S5%>%filter(.,Pollutant == input$chemical)%>%filter(., City%in%P_S5$City[which(P_S5$Pollutant == input$chemical)])  
     
+    
+  })  
     
  
    
@@ -81,7 +97,9 @@ function(input, output, session) {
    
   output$Boxplot_chemical <- renderPlot({
     
-    ggplot(Chemicals_bycity(),aes(x=Pollutant,y=value))+geom_boxplot(aes(color=Pollutant))
+    ggplot(Chemicals_bycity(),aes(x=Pollutant,y=value))+geom_boxplot(aes(color=Pollutant))+labs(x="pollutant",y="Air Quality")+
+   ggtitle("Pollution by chemical")
+            
     })
   
    output$top_citiesBC=renderPlot({
@@ -93,6 +111,24 @@ function(input, output, session) {
      ggplot(Values_bychemicalBottom(),aes(x=reorder(City,value,median),y=value))+geom_boxplot(aes(color=City))+labs(x="City",y="Air Quality")+ggtitle("Least Polluted Cities")+coord_flip()
      
    })
+   output$chosen_cities=renderPlot({
+     ggplot(chosen_cities(),aes(x=reorder(City,value,median),y=value))+geom_boxplot(aes(color=City))+labs(x="City",y="Air Quality")+ggtitle("Pollution in main cities")
+     
+   })
+  
+    output$Pollution_Annual=renderPlot({
+      ggplot(Pollution_Annual(),aes(x=Year,y=value))+geom_point(aes(color=Year),position="jitter")+geom_smooth(method="lm")+
+        labs(x="Year",y="Air Quality")+ggtitle("Evolution of Pollution over the years")+
+      geom_hline(yintercept=50)
+      })
+    
+     output$Pollution_bymonth=renderPlot({
+      
+       ggplot(Pollution_Monthly(),aes(x=Month,y=value))+geom_point(aes(color=Month),position="jitter")+geom_smooth(method="lm")+
+         labs(x="Month",y="Air Quality")+ggtitle("Evolution of Pollution over the months")+
+         geom_hline(yintercept=50)
+     })
+    
 }
   
   

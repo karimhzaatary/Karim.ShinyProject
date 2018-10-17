@@ -29,7 +29,8 @@ library(tidyr)
           CO.AQI=if_else(is.na(CO.AQI),17.35*CO.Mean-0.33,as.double(CO.AQI)),
           SO2.AQI=if_else(is.na(SO2.AQI),3.4896*SO2.Mean+0.94,as.double(SO2.AQI)))
 
-Pollution_3 <-Pollution_2 %>%
+#grouping pollution air qulity values by State,city and Date
+ Pollution_3 <-Pollution_2 %>%
    group_by(.,State,City,Date.Local,Month,Year)%>%
    summarise_at(.,c("NO2.Mean","NO2.AQI",
                     "O3.Mean","O3.AQI",
@@ -37,17 +38,19 @@ Pollution_3 <-Pollution_2 %>%
                     "CO.Mean","CO.AQI"),mean,na.rm=TRUE)#%>%
   summarise_at(.,c("NO2.1st.Max.Value","SO2.1st.Max.Value","CO.1st.Max.Value","O3.1st.Max.Value",
                  "NO2.1st.Max.Hour","O3.1st.Max.Hour",'SO2.1st.Max.Hour',"CO.1st.Max.Hour"),max,rm.na=T)
-  Pollution_3=Pollution_3%>%filter(.,City!="Not in a City")
+  Pollution_3=Pollution_3%>%filter(.,City!="Not in a city")
 
 write.csv(Pollution_3,'Pollution_test.csv')
 # graphing macro trend
 
-# group air quality variants by median and plot over the years 
+# group air quality variants by median and plot over the years (Pollution_4 is the values of air pollution by month of each year)
   library(ggplot2)
  Pollution_4=Pollution_3%>%group_by(.,State,City,Year,Month)%>%summarise(.,median_NO2=median(NO2.AQI),
                                                                          median_SO2=median(SO2.AQI),
                                                                          median_CO=median(CO.AQI),
                                                                          median_O3=median(O3.AQI))
+ 
+ Pollution_4=Pollution_4%>%filter(.,City!="Not in a city")
  # Trend for each city (all chemicals) 
    # Cities Chosen (NY,LA,Pheonix,SF,Boston)
  library(reshape2)
